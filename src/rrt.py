@@ -1,7 +1,8 @@
 import random
 import unittest
 from shapely import LineString, Point, linestrings
-from maze import Maze, plt
+from helpers.maze import Maze, plt
+from helpers.generate_nodes import convert_maze
 
 
 class Graph:
@@ -72,11 +73,11 @@ class Graph:
                 # print("popping")
                 old.append(nodes.pop())
                 return self.find_path(
-                    goal=nodes[-1], edges=edges, nodes=nodes, ax=ax, old=old
+                    goal=nodes[-1], edges=edges, nodes=nodes, ax=ax, old=old, plot=plot
                 )
             return print("UNABLE TO FIND PATH", edges, goal, current, self.nodes)
 
-        return self.find_path(goal=nodes[-1], edges=edges, nodes=nodes, ax=ax, old=old)
+        return self.find_path(goal=nodes[-1], edges=edges, nodes=nodes, ax=ax, old=old, plot=plot)
 
     def validline(self, line: LineString) -> bool:
         for edge in self.edges:
@@ -109,7 +110,7 @@ def is_orthogonal(line: LineString):
     )
 
 
-def rrt(maze: Maze):
+def rrt(maze: Maze, plot: bool = False):
     # goal point is one point left to the last position
 
     lim = 1000
@@ -122,21 +123,24 @@ def rrt(maze: Maze):
 
     graph = Graph(maze_object, maze.entrance, qgoal)
 
-    # # get two subplots
-    # fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(10, 5))
 
-    # fig.patch.set_facecolor('black')
+    fig, ax1, ax2 = [None, None, None] # fool lsp
+    if plot:
+        # get two subplots
+        fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(10, 5))
 
-    # ax1.set_facecolor('black')
-    # ax1.set_aspect("equal")
-    # ax1.set_xticks([], "")
-    # ax1.set_yticks([], "")
-    # ax2.set_aspect("equal")
-    # ax2.set_facecolor('black')
-    # ax2.set_xticks([], "")
-    # ax2.set_yticks([], "")
-    # ax1.invert_yaxis()
-    # ax2.invert_yaxis()
+        fig.patch.set_facecolor('black')
+
+        ax1.set_facecolor('black')
+        ax1.set_aspect("equal")
+        ax1.set_xticks([], "")
+        ax1.set_yticks([], "")
+        ax2.set_aspect("equal")
+        ax2.set_facecolor('black')
+        ax2.set_xticks([], "")
+        ax2.set_yticks([], "")
+        ax1.invert_yaxis()
+        ax2.invert_yaxis()
 
     valid_points = [
         (j, i)
@@ -170,73 +174,25 @@ def rrt(maze: Maze):
                 graph.edges.append(qnear)
                 graph.nodes.append(Point(qgoal))
                 graph.edges.append(LineString([qrand, qgoal]))
-                # graph.plot(ax1)
-                # plt.pause(0.01)
+                if plot:
+                    graph.plot(ax1)
+                    plt.pause(0.01)
                 # print("BREAK")
                 break
             if qrand in valid_points:
                 valid_points.remove(qrand)
             graph.nodes.append(Point(qrand))
             graph.edges.append(qnear)
-            # graph.plot(ax1)
-            # plt.pause(0.01)
+            if plot:
+                graph.plot(ax1)
+                plt.pause(0.01)
     # print(graph.nodes)
 
-    graph.find_path(ax=None)
+    graph.find_path(ax=ax2, plot=plot)
 
     plt.show()
 
 
-def convert_maze(maze_array):
-    # convert maze array to shapely polygon
-    # [[0, 0, 0, 0, 1],
-    #  [1, 1, 1, 1, 0],
-    #  [0, 0, 0, 1, 0],
-    #  [0, 1, 1, 1, 0],
-    #  [0, 0, 0, 0, 0]]
-
-    # to
-    # [(1,0), (1,1), (1,2), (1,3), (1,4), (2,4), (3,4), (4,4), (4,3), (4,2), (4,1), (4,0), (3,0), (2,0), (1,0)]
-
-    for j in range(len(maze_array)):
-        state = 0
-        start = 0
-        end = 0
-        for i in range(len(maze_array[j])):
-            if maze_array[j][i] == 0:
-                if state == 0:
-                    state = 1
-                    start = i
-                    end = i
-                else:
-                    end = i
-            else:
-                if state == 1:
-                    state = 0
-                    if start != end:
-                        yield [[start, j], [end, j]]
-        if state == 1 and start != end:
-            yield [[start, j], [end, j]]
-
-    for i in range(len(maze_array[0])):
-        state = 0
-        start = 0
-        end = 0
-        for j in range(len(maze_array)):
-            if maze_array[j][i] == 0:
-                if state == 0:
-                    state = 1
-                    start = j
-                    end = j
-                else:
-                    end = j
-            else:
-                if state == 1:
-                    state = 0
-                    if start != end:
-                        yield [[i, start], [i, end]]
-        if state == 1 and start != end:
-            yield [[i, start], [i, end]]
 
 
 def run_rrt(maze):
@@ -250,9 +206,10 @@ def run_rrt(maze):
 
 
 if __name__ == "__main__":
-    # rrt(Maze(6, 6))
+    n = int(input("Enter size of nxn maze"))
+    rrt(Maze(n, n), plot=True)
 
-    rrt(Maze(10, 10))
+    # rrt(Maze(10, 10))
 
 
 class TestGraph(unittest.TestCase):

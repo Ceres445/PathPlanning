@@ -1,20 +1,15 @@
-from generate_nodes import NodeGraph, generate_nodes, unittest
-from maze import Maze
-
-
-
+from helpers.generate_nodes import NodeGraph, generate_nodes, unittest
+from helpers.maze import Maze
 
 
 def min_val(di):
     return min(di, key=lambda x: di.get(x)[0])
 
 
-
-
 def djikstra(graph: NodeGraph, start: tuple, end: tuple) -> list:
     current = start
     finished = [start]
-    edges = { x:[1, current] for x in graph.node_dict[current]}
+    edges = {x: [1, current] for x in graph.node_dict[current]}
     current = min_val(edges)
     old = {start: [0, None]}
     while current != end:
@@ -23,14 +18,17 @@ def djikstra(graph: NodeGraph, start: tuple, end: tuple) -> list:
                 if edge not in edges:
                     edges[edge] = [edges[current][0] + 1, current]
                 else:
-                    edges[edge] = min(edges[edge], [edges[current][0] + 1, current], key=lambda x: x[0])
+                    edges[edge] = min(
+                        edges[edge],
+                        [edges[current][0] + 1, current],
+                        key=lambda x: x[0],
+                    )
 
         finished.append(current)
         old[current] = edges.pop(current)
         # print(finished)
         # print(edges)
         current = min_val(edges)
-
 
     old[current] = edges.pop(current)
     nodes = [end]
@@ -87,36 +85,36 @@ class TestGraph(unittest.TestCase):
         grpah = NodeGraph.from_maze(TestMaze().maze, nodes, edges)
         grpah.plot()
 
-
         self.assertEqual(len(graph.nodes), 73)
         self.assertEqual(len(graph.valid_points), 201)
 
 
-
-
-def run_djikstra(maze):
+def run_djikstra(maze, plot=False):
     print("------------")
     print("Djikstra")
     import time
+
     a = time.perf_counter()
     print(f"Size of maze: ( nxn )", len(maze.get_maze_array()))
     graph = generate_nodes(maze)
     print(f"Generating nodes took {time.perf_counter() - a} seconds")
     print("Nodes:", len(graph.nodes))
     print("Valid points:", len(graph.valid_points))
-    # print(graph.nodes, graph.node_dict)
-    # graph.plot()
     a = time.perf_counter()
     nodes, edges = djikstra(graph, (0, maze.entrance), (maze.ny * 2, maze.exit))
+    if plot:
+        NodeGraph.from_maze(maze.get_maze_array(), nodes, edges).plot()
     print(f"Finding path took {time.perf_counter() - a} seconds")
     print("Nodes:", len(nodes))
+    print("Edges:", len(edges))
     # grpah = NodeGraph.from_maze(maze.get_maze_array(), nodes, edges)
     # grpah.plot()
     # TestGraph().test_graph()
 
 
-if __name__ == '__main__':  
-    run_djikstra(Maze(5, 5))
+if __name__ == "__main__":
+    n = int(input("Enter the size of the maze: "))
+    run_djikstra(Maze(n, n), plot=True)
     # run(10)
     # run(100)
     # run(200)

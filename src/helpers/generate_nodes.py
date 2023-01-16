@@ -1,6 +1,57 @@
 import unittest
-from maze import Maze
-from rrt import convert_maze
+from helpers.maze import Maze
+
+
+def convert_maze(maze_array):
+    # convert maze array to shapely polygon
+    # [[0, 0, 0, 0, 1],
+    #  [1, 1, 1, 1, 0],
+    #  [0, 0, 0, 1, 0],
+    #  [0, 1, 1, 1, 0],
+    #  [0, 0, 0, 0, 0]]
+
+    # to
+    # [(1,0), (1,1), (1,2), (1,3), (1,4), (2,4), (3,4), (4,4), (4,3), (4,2), (4,1), (4,0), (3,0), (2,0), (1,0)]
+
+    for j in range(len(maze_array)):
+        state = 0
+        start = 0
+        end = 0
+        for i in range(len(maze_array[j])):
+            if maze_array[j][i] == 0:
+                if state == 0:
+                    state = 1
+                    start = i
+                    end = i
+                else:
+                    end = i
+            else:
+                if state == 1:
+                    state = 0
+                    if start != end:
+                        yield [[start, j], [end, j]]
+        if state == 1 and start != end:
+            yield [[start, j], [end, j]]
+
+    for i in range(len(maze_array[0])):
+        state = 0
+        start = 0
+        end = 0
+        for j in range(len(maze_array)):
+            if maze_array[j][i] == 0:
+                if state == 0:
+                    state = 1
+                    start = j
+                    end = j
+                else:
+                    end = j
+            else:
+                if state == 1:
+                    state = 0
+                    if start != end:
+                        yield [[i, start], [i, end]]
+        if state == 1 and start != end:
+            yield [[i, start], [i, end]]
 
 
 class NodeGraph:
@@ -75,14 +126,15 @@ class NodeGraph:
                 edges.append(edge)
         return edges
 
-    def plot(self, node_color="red", edge_color="blue"):
+    def plot(self, node_color="red", edge_color="blue", ax=None):
         import matplotlib.pyplot as plt
         from matplotlib import axes
+        if ax is None:
 
-        _, ax = plt.subplots()
+            _, ax = plt.subplots()
 
-        # type hint for lsp
-        ax: axes.Axes = ax
+            # type hint for lsp
+            ax: axes.Axes = ax
         # ax.pcolormesh(maze, cmap="gray")
         walls = convert_maze(self.maze)
         for wall in walls:
@@ -189,7 +241,6 @@ class TestGraph(unittest.TestCase):
                 print(node, cur, graph.node_dict[node])
                 assert node in graph.nodes
                 assert cur in graph.node_dict[node]
-
 
 
 if __name__ == "__main__":

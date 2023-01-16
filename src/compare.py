@@ -1,4 +1,4 @@
-from maze import Maze 
+from helpers.maze import Maze 
 from rrt import run_rrt
 from djikstra import run_djikstra
 
