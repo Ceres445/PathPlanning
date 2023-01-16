@@ -75,7 +75,7 @@ class Maze:
             x2, y2 = cell.x + dx, cell.y + dy
             if (0 <= x2 < self.nx) and (0 <= y2 < self.ny):
                 neighbour = self.maze_map[x2][y2]
-                if all(neighbour.walls.values()): # if neighbour has all walls
+                if all(neighbour.walls.values()):
                     neighbours.append((direction, neighbour))
         return neighbours
 

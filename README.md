@@ -10,5 +10,5 @@ Path planning mini project for [ERC](https://erc-bpgc.github.io/) inductions
 
 
     - [x] RRT
-    - [ ] Dijkstra 
+    - [x] Dijkstra 
     - [ ] A*

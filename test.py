@@ -30,8 +30,9 @@ class TestGraph(unittest.TestCase):
         ]
 
         maze_object = linestrings(list(convert_maze(maze_array)))
-        graph = Graph(maze_object, 1, Point(18,20))
-        self.assertEqual(graph.nearest(Point(0, 2)), LineString([(0, 1), (0,2)]))
+        graph = Graph(maze_object, 1, Point(18, 20))
+        self.assertEqual(graph.nearest(Point(0, 2)), LineString([(0, 1), (0, 2)]))
+
 
 if __name__ == "__main__":
-        TestGraph().test_graph()
+    TestGraph().test_graph()

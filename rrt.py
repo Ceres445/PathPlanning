@@ -11,7 +11,7 @@ class Graph:
         self.maze = maze
         self.goal = goal
 
-    def nearest(self, point: Point):
+    def nearest_node(self, point: Point):
         current = None
         if point in self.nodes:
             return None
@@ -34,7 +34,7 @@ class Graph:
         else:
             return current
 
-    def find_path(self, ax, goal=None, edges=[], nodes=[], old=[]):
+    def find_path(self, ax, goal=None, edges=[], nodes=[], old=[], plot=False):
         current = goal or self.goal
         color = "blue"
         if current == self.nodes[0]:
@@ -50,25 +50,26 @@ class Graph:
                 else:
                     nodes.append(Point(edge.coords[0]))
 
-        ax.plot(*current.xy, marker="o", color="red")
-        for edge in edges:
-            ax.plot(*edge.xy, color="red")
+        if plot:
+            ax.plot(*current.xy, marker="o", color="red")
+            for edge in edges:
+                ax.plot(*edge.xy, color="red")
 
-        for node in nodes:
-            ax.plot(*node.xy, marker="o", color=color)
+            for node in nodes:
+                ax.plot(*node.xy, marker="o", color=color)
 
-        for node in old:
-            ax.plot(*node.xy, marker="o", color="green")
+            for node in old:
+                ax.plot(*node.xy, marker="o", color="green")
 
-        for line in self.maze:
-            ax.plot(*line.xy, color="white")
-        plt.pause(0.01)
+            for line in self.maze:
+                ax.plot(*line.xy, color="white")
+            plt.pause(0.01)
         if color == "yellow":
             return nodes, edges
 
         if not state:
             if len(nodes) > 1:
-                print("popping")
+                # print("popping")
                 old.append(nodes.pop())
                 return self.find_path(
                     goal=nodes[-1], edges=edges, nodes=nodes, ax=ax, old=old
@@ -121,21 +122,22 @@ def rrt(maze: Maze):
 
     graph = Graph(maze_object, maze.entrance, qgoal)
 
-    # get two subplots
-    fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(10, 5))
+    # # get two subplots
+    # fig, [ax1, ax2] = plt.subplots(1, 2, figsize=(10, 5))
 
-    fig.patch.set_facecolor('black')
+    # fig.patch.set_facecolor('black')
 
-    ax1.set_facecolor('black')
-    ax1.set_aspect("equal")
-    ax1.set_xticks([], "")
-    ax1.set_yticks([], "")
-    ax2.set_aspect("equal")
-    ax2.set_facecolor('black')
-    ax2.set_xticks([], "")
-    ax2.set_yticks([], "")
-    ax1.invert_yaxis()
-    ax2.invert_yaxis()
+    # ax1.set_facecolor('black')
+    # ax1.set_aspect("equal")
+    # ax1.set_xticks([], "")
+    # ax1.set_yticks([], "")
+    # ax2.set_aspect("equal")
+    # ax2.set_facecolor('black')
+    # ax2.set_xticks([], "")
+    # ax2.set_yticks([], "")
+    # ax1.invert_yaxis()
+    # ax2.invert_yaxis()
+
     valid_points = [
         (j, i)
         for i in range(len(maze_array))
@@ -158,9 +160,9 @@ def rrt(maze: Maze):
         #     ),
         # ][random.randint(0, 1)]
 
-        qnear = graph.nearest(Point(qrand))
+        qnear = graph.nearest_node(Point(qrand))
 
-        print(f"Valid points: {len(valid_points)}")
+        # print(f"Valid points: {len(valid_points)}")
         if qnear is not None:
             lim -= 1
             if graph.validline(LineString([qrand, qgoal])):
@@ -168,19 +170,19 @@ def rrt(maze: Maze):
                 graph.edges.append(qnear)
                 graph.nodes.append(Point(qgoal))
                 graph.edges.append(LineString([qrand, qgoal]))
-                graph.plot(ax1)
-                plt.pause(0.01)
-                print("BREAK")
+                # graph.plot(ax1)
+                # plt.pause(0.01)
+                # print("BREAK")
                 break
             if qrand in valid_points:
                 valid_points.remove(qrand)
             graph.nodes.append(Point(qrand))
             graph.edges.append(qnear)
-            graph.plot(ax1)
-            plt.pause(0.01)
-    print(graph.nodes)
+            # graph.plot(ax1)
+            # plt.pause(0.01)
+    # print(graph.nodes)
 
-    graph.find_path(ax=ax2)
+    graph.find_path(ax=None)
 
     plt.show()
 
@@ -237,9 +239,20 @@ def convert_maze(maze_array):
             yield [[i, start], [i, end]]
 
 
+def run_rrt(maze):
+    print("------------")
+    print("RRT")
+    import time
+
+    a = time.perf_counter()
+    rrt(maze)
+    print("Time taken: ", time.perf_counter() - a)
+
+
 if __name__ == "__main__":
-    rrt(Maze(8, 8))
-    # rrt(Maze(5, 5))
+    # rrt(Maze(6, 6))
+
+    rrt(Maze(10, 10))
 
 
 class TestGraph(unittest.TestCase):
@@ -270,4 +283,4 @@ class TestGraph(unittest.TestCase):
 
         maze_object = linestrings(list(convert_maze(maze_array)))
         graph = Graph(maze_object, 1, Point([17, 20]))
-        self.assertEqual(graph.nearest(Point(1, 0)), LineString([(0, 1), (0, 2)]))
+        self.assertEqual(graph.nearest_node(Point(1, 0)), LineString([(0, 1), (0, 2)]))
